@@ -1,0 +1,14 @@
+{
+  "_comment": "A correctly computed receipt. The app must NOT cry foul here -- a false accusation sends a senior to argue with a manager who is right.",
+  "cardholder": "senior",
+  "merchant": "Kusina ng Bayan",
+  "date": "2026-02-16",
+  "receipt_no": "OR-7781",
+  "printed_total": "200.00",
+  "printed_discount": "50.00",
+  "printed_vat": "0.00",
+  "lines": [
+    {"description": "Chicken meal with rice", "gross": "112.00", "category": "restaurant"},
+    {"description": "Bangus meal with rice", "gross": "168.00", "category": "restaurant"}
+  ]
+}

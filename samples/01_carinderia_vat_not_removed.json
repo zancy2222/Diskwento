@@ -1,0 +1,15 @@
+{
+  "_comment": "The single most common real-world error: the cashier takes 20% off the VAT-inclusive price and leaves the 12% VAT on the bill.",
+  "cardholder": "senior",
+  "merchant": "Aling Nena Carinderia",
+  "date": "2026-02-14",
+  "receipt_no": "OR-0042",
+  "printed_total": "136.00",
+  "printed_discount": "34.00",
+  "printed_vat": "14.57",
+  "lines": [
+    {"description": "Lugaw na may itlog", "gross": "60.00", "category": "restaurant"},
+    {"description": "Tokwa't baboy", "gross": "85.00", "category": "restaurant"},
+    {"description": "Kape", "gross": "25.00", "category": "restaurant"}
+  ]
+}

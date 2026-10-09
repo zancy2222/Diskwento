@@ -1,0 +1,12 @@
+{
+  "_comment": "Maintenance medicines with neither the discount nor the VAT exemption applied.",
+  "cardholder": "pwd",
+  "merchant": "Botika ni Mang Kanor",
+  "date": "2026-02-15",
+  "receipt_no": "SI-11928",
+  "printed_total": "896.00",
+  "lines": [
+    {"description": "Losartan 50mg x 30 tab", "gross": "560.00", "category": "medicine"},
+    {"description": "Metformin 500mg x 30 tab", "gross": "336.00", "category": "medicine"}
+  ]
+}

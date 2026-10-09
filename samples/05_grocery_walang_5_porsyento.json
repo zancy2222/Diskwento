@@ -1,0 +1,14 @@
+{
+  "_comment": "Grocery run. The medicine was handled correctly but the separate 5% on basic necessities was never applied. Note the weekly ceiling: the rice alone exhausts it, so the shampoo gets nothing.",
+  "cardholder": "senior",
+  "merchant": "Puregold Taytay",
+  "date": "2026-02-18",
+  "receipt_no": "SI-884201",
+  "printed_total": "1845.00",
+  "lines": [
+    {"description": "Bigas Sinandomeng 25kg", "gross": "1500.00", "category": "basic_necessity"},
+    {"description": "Red Horse 1L", "gross": "120.00", "category": "alcohol"},
+    {"description": "Shampoo 400ml", "gross": "185.00", "category": "prime_commodity"},
+    {"description": "Paracetamol 500mg", "gross": "56.00", "category": "medicine"}
+  ]
+}

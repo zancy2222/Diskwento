@@ -1,0 +1,11 @@
+{
+  "_comment": "Family of four, one senior. The privilege covers the senior's share only -- and on that share the VAT still was not removed.",
+  "cardholder": "senior",
+  "merchant": "Dampa Seafood Grill",
+  "date": "2026-02-17",
+  "receipt_no": "OR-3310",
+  "printed_total": "2128.00",
+  "lines": [
+    {"description": "Family set meal para sa apat", "gross": "2240.00", "category": "restaurant", "diners_sharing": 4}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "A non-VAT-registered sari-sari store. There is no VAT to strip, so the 20% comes straight off the price -- and here it was not given at all.",
+  "cardholder": "senior",
+  "merchant": "Tindahan ni Aling Rosa",
+  "date": "2026-02-19",
+  "receipt_no": "",
+  "seller_vat_registered": false,
+  "printed_total": "48.50",
+  "lines": [
+    {"description": "Sardinas 155g", "gross": "30.00", "category": "basic_necessity"},
+    {"description": "Paracetamol 500mg x 4", "gross": "20.00", "category": "medicine"}
+  ]
+}
