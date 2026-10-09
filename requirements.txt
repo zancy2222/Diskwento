@@ -1,0 +1,13 @@
+# The deterministic engine, the letter templates and the Ollama client need
+# NOTHING from this file -- they are pure standard library. Install these only
+# for the features you actually want.
+
+# --- OCR, pick one ---
+# PaddleOCR is noticeably better on thermal receipt paper.
+paddleocr>=2.7 ; extra == "ocr-paddle"
+paddlepaddle>=2.6 ; extra == "ocr-paddle"
+# Tesseract is lighter. Needs the system binary: apt install tesseract-ocr
+pillow>=10.0 ; extra == "ocr-tesseract"
+
+# --- image preprocessing (recommended with either backend) ---
+pillow>=10.0

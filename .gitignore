@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+# receipt photos: never commit someone's purchase history or ID number
+samples/*.jpg
+samples/*.jpeg
+samples/*.png
