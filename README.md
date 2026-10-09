@@ -68,12 +68,33 @@ opens it. Three ways in:
 The result shows the verdict, the full arithmetic trail, a sentence to say to
 the cashier, and the complaint letter with copy and print buttons.
 
+The result shows the verdict, the full arithmetic trail, a sentence to say to
+the cashier, and the complaint letter with copy and print buttons. **Print**
+uses a dedicated print stylesheet, so you get the letter on its own page with
+the citations underneath — not a screenshot of the app.
+
 A browser rather than a desktop toolkit because the browser already has a
 camera: no OpenCV wheels to fight on Windows, and the same page opens on a
 phone. `--lan` binds all interfaces so a phone on the same wifi can reach it
 (`run-gui-lan.bat`). Note that the live camera needs a secure context, so over
 plain HTTP on a LAN address use "Pumili ng litrato" — on a phone that opens
 the camera app anyway.
+
+**Design constraints**, all enforceable by reading `web/index.html`:
+
+- *Mobile first.* Every base rule describes a phone; the only media queries
+  widen upward (`min-width`). 48px tap targets, 16px inputs so iOS does not
+  zoom on focus, and `env(safe-area-inset-*)` for notched handsets.
+- *Light only.* `color-scheme: light` and no `prefers-color-scheme` block, so
+  a dark-mode phone cannot invert the page or darken the form controls. This
+  is a document someone holds up to a store manager; it should look the same
+  on every handset.
+- *Nothing is fetched.* No CDN, no web fonts, no external stylesheets. The
+  page is one file and works with the cable pulled out.
+- *The page never does arithmetic.* Every amount arrives from the engine
+  already formatted. The one exception is the running "suma ng mga inilagay"
+  in manual entry, which only adds up what you typed so a missed line is
+  obvious, and never feeds the audit.
 
 On Windows use `py` in place of `python`. The CLI forces UTF-8 output and
 enables ANSI colour itself, so the peso sign prints correctly in `cmd`,
