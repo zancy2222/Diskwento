@@ -252,7 +252,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "audit":
-        for path in args.paths:
+        # Expand wildcards ourselves: a POSIX shell globs before we are called,
+        # but cmd.exe and PowerShell hand the pattern through verbatim, so
+        # "audit samples/*.json" would otherwise look for a file literally
+        # named "*.json". A pattern that matches nothing is passed through so
+        # a genuinely missing file still reports itself.
+        paths = [
+            match
+            for pattern in args.paths
+            for match in (sorted(glob.glob(pattern)) or [pattern])
+        ]
+        for path in paths:
             _run(path, args)
         return 0
 
