@@ -52,6 +52,10 @@ python -m diskwento demo --no-llm           # the whole pitch, six receipts
 python -m diskwento doctor                  # what is installed and ready
 ```
 
+On Windows use `py` in place of `python`. The CLI forces UTF-8 output and
+enables ANSI colour itself, so the peso sign prints correctly in `cmd`,
+PowerShell and Windows Terminal without any setup.
+
 Add the local model for fluent letters:
 
 ```bash

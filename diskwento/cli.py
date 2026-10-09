@@ -31,8 +31,52 @@ _TREATMENT_LABEL = {
 }
 
 
+def _force_utf8_stdout() -> None:
+    """Make sure the peso sign can actually be printed.
+
+    A Windows console defaults to a legacy code page (cp1252 / cp437), and
+    U+20B1 PESO SIGN is in neither. Printing the report then raises
+    UnicodeEncodeError and takes the whole demo down, which is a miserable way
+    to discover this at 9:55am.
+    """
+    encoding = (getattr(sys.stdout, "encoding", "") or "").lower().replace("-", "")
+    if encoding == "utf8":
+        return
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+def _enable_ansi() -> bool:
+    """Turn on ANSI colour support, reporting whether it is usable.
+
+    Windows 10 conhost understands ANSI only once virtual-terminal processing
+    is switched on; without this the report prints literal "[1;37;41m" noise.
+    """
+    if sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        mode = ctypes.c_uint32()
+        if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+            return False
+        # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        return bool(kernel32.SetConsoleMode(handle, mode.value | 0x4))
+    except Exception:
+        return False
+
+
+_ANSI = True
+
+
 def _c(text: str, code: str) -> str:
-    return f"\033[{code}m{text}\033[0m" if sys.stdout.isatty() else text
+    if not _ANSI or not sys.stdout.isatty():
+        return text
+    return f"\033[{code}m{text}\033[0m"
 
 
 def _report(result, writeup: llm.WriteUp) -> None:
@@ -143,6 +187,10 @@ def _doctor(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    global _ANSI
+    _force_utf8_stdout()
+    _ANSI = _enable_ansi()
+
     parser = argparse.ArgumentParser(
         prog="diskwento",
         description="Tama ba ang Diskwento? -- PWD & Senior Citizen discount auditor",
