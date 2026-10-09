@@ -15,6 +15,7 @@ import argparse
 import glob
 import sys
 from decimal import Decimal
+from pathlib import Path
 
 from . import law, llm
 from .engine import CORRECT, SHORTCHANGED, audit, to_brief
@@ -23,6 +24,12 @@ from .loader import receipt_from_json
 from .money import ZERO, fmt
 
 _RULE = "─" * 64
+
+# The repository root, so `demo` works from any directory. Looking only in the
+# current directory meant "python -m diskwento demo" failed with a bare "no
+# samples found" whenever it was launched from anywhere but the project root,
+# which on Windows is most of the time.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 
 _TREATMENT_LABEL = {
     Treatment.TWENTY_PCT_VAT_EXEMPT: "bawas 20% (VAT-exempt)",
@@ -138,6 +145,15 @@ def _report(result, writeup: llm.WriteUp) -> None:
     print()
 
 
+def _sample_paths() -> list[str]:
+    """Locate the bundled sample receipts, cwd first then the repo root."""
+    for base in (Path.cwd(), _REPO_ROOT):
+        found = sorted(glob.glob(str(base / "samples" / "*.json")))
+        if found:
+            return found
+    return []
+
+
 def _run(path: str, args) -> str:
     result = audit(receipt_from_json(path))
     writeup = llm.write_up(
@@ -233,9 +249,13 @@ def main(argv: list[str] | None = None) -> int:
         return _doctor(args)
 
     if args.command == "demo":
-        paths = sorted(glob.glob("samples/*.json"))
+        paths = _sample_paths()
         if not paths:
-            print("No samples/*.json found; run from the repository root.")
+            print(
+                "No sample receipts found. Expected them in "
+                f"{_REPO_ROOT / 'samples'} -- re-pull the repository if that "
+                "folder is missing."
+            )
             return 1
         shortchanged = 0
         for path in paths:
