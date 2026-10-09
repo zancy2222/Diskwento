@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="fil">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Tama ba ang Diskwento?</title>
+<style>
+/* Everything is inline. No CDN, no fonts fetched: the app must work with the
+   network cable pulled out, which is the whole premise. */
+:root {
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --ink: #16181d;
+  --muted: #646c7a;
+  --line: #e3e6ea;
+  --accent: #1b5e9c;
+  --accent-ink: #ffffff;
+  --bad: #b3261e;
+  --bad-bg: #fdecea;
+  --good: #11633f;
+  --good-bg: #e7f5ee;
+  --warn: #8a5a00;
+  --warn-bg: #fdf3e0;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --card: #1d2026;
+    --ink: #eceef2;
+    --muted: #a0a8b4;
+    --line: #2e333c;
+    --accent: #6aa9e0;
+    --accent-ink: #0c1218;
+    --bad: #f2b8b5;
+    --bad-bg: #3b1b18;
+    --good: #8fd9b4;
+    --good-bg: #14321f;
+    --warn: #f0cf8e;
+    --warn-bg: #352a12;
+  }
+}
+* { box-sizing: border-box; }
+/* .btn is display:inline-flex and .row is display:flex, both of which outrank
+   the user agent's [hidden] { display: none } on specificity -- without this
+   the capture buttons are visible before the camera is even open. */
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 680px; margin: 0 auto; padding: 16px 16px 64px; }
+
+header { padding: 22px 2px 18px; }
+h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+.pill {
+  display: inline-block; margin-top: 10px; padding: 3px 10px;
+  border: 1px solid var(--line); border-radius: 999px;
+  font-size: 0.72rem; color: var(--muted); background: var(--card);
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+}
+
+/* --- tabs --- */
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.tabs button {
+  flex: 1; padding: 11px 6px; border: 1px solid var(--line);
+  background: var(--card); color: var(--muted); border-radius: 10px;
+  font-size: 0.86rem; font-weight: 600; cursor: pointer;
+}
+.tabs button[aria-selected="true"] {
+  background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+}
+.panel[hidden] { display: none; }
+
+/* --- controls --- */
+label { display: block; font-size: 0.78rem; color: var(--muted);
+        margin-bottom: 4px; font-weight: 600; }
+input, select, button, textarea { font: inherit; }
+input[type=text], input[type=number], select {
+  width: 100%; padding: 10px; border: 1px solid var(--line);
+  border-radius: 9px; background: var(--bg); color: var(--ink);
+}
+.row { display: flex; gap: 8px; }
+.row > * { min-width: 0; }
+.grow { flex: 1; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border: 0; border-radius: 11px;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 700; cursor: pointer;
+}
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.btn.ghost {
+  background: var(--card); color: var(--ink); border: 1px solid var(--line);
+  font-weight: 600;
+}
+.btn.small { width: auto; padding: 8px 14px; font-size: 0.82rem; }
+
+/* --- items being entered --- */
+.item {
+  display: grid; grid-template-columns: 1fr 104px 132px 36px;
+  gap: 6px; margin-bottom: 6px; align-items: center;
+}
+.item button {
+  border: 1px solid var(--line); background: var(--card); color: var(--muted);
+  border-radius: 8px; height: 100%; cursor: pointer;
+}
+@media (max-width: 560px) {
+  .item { grid-template-columns: 1fr 1fr; }
+  .item select { grid-column: 1 / -1; }
+}
+
+/* --- camera --- */
+#stage {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: #000; aspect-ratio: 3 / 4; display: none;
+}
+#stage.on { display: block; }
+#video, #shot { width: 100%; height: 100%; object-fit: cover; display: block; }
+#shot { display: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 10px 0 0; }
+
+/* --- verdict --- */
+.verdict { padding: 18px; border-radius: var(--radius); margin-bottom: 14px; }
+.verdict.bad  { background: var(--bad-bg);  border: 1px solid var(--bad); }
+.verdict.good { background: var(--good-bg); border: 1px solid var(--good); }
+.verdict.warn { background: var(--warn-bg); border: 1px solid var(--warn); }
+.verdict .amount {
+  font-size: 2.3rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+}
+.verdict.bad .amount  { color: var(--bad); }
+.verdict.good .amount { color: var(--good); }
+.verdict.warn .amount { color: var(--warn); }
+.verdict .what { font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+                 letter-spacing: 0.07em; opacity: 0.8; }
+.verdict p { margin: 10px 0 0; }
+
+/* --- math trail --- */
+.trail { margin: 0; font-variant-numeric: tabular-nums; font-size: 0.93rem; }
+.trail div {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 7px 0; border-bottom: 1px dashed var(--line);
+}
+.trail div:last-child { border-bottom: 0; }
+.trail .k { color: var(--muted); }
+.trail .total { font-weight: 800; border-top: 2px solid var(--line);
+                margin-top: 4px; padding-top: 10px; }
+.trail .total .k { color: inherit; }
+
+h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em;
+     color: var(--muted); margin: 0 0 10px; }
+
+.say {
+  background: var(--bg); border-left: 3px solid var(--accent);
+  padding: 12px 14px; border-radius: 0 9px 9px 0; font-style: italic;
+}
+.note {
+  background: var(--warn-bg); color: var(--warn); border-radius: 9px;
+  padding: 10px 12px; font-size: 0.85rem; margin-bottom: 8px;
+}
+.err {
+  background: var(--bad-bg); color: var(--bad); border-radius: 9px;
+  padding: 12px 14px; font-size: 0.88rem; white-space: pre-wrap;
+}
+pre.letter {
+  white-space: pre-wrap; word-wrap: break-word; margin: 0;
+  font: 0.88rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--bg); padding: 14px; border-radius: 10px;
+  border: 1px solid var(--line);
+}
+details summary { cursor: pointer; font-weight: 600; }
+.cite { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+.cite b { color: var(--ink); }
+.src { font-size: 0.72rem; color: var(--muted); margin-top: 10px; }
+.spinner {
+  width: 15px; height: 15px; border: 2px solid currentColor;
+  border-right-color: transparent; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Tama ba ang Diskwento?</h1>
+  <p>Tingnan kung tama ang 20% diskwento at VAT exemption ng senior citizen o PWD.</p>
+  <span class="pill" id="health">Sinusuri ang makina&hellip;</span>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true"  data-tab="photo">Litrato</button>
+  <button role="tab" aria-selected="false" data-tab="manual">Manu-mano</button>
+  <button role="tab" aria-selected="false" data-tab="sample">Halimbawa</button>
+</div>
+
+<!-- ============ PHOTO ============ -->
+<section class="card panel" id="panel-photo">
+  <div id="stage">
+    <video id="video" playsinline muted></video>
+    <img id="shot" alt="Nakuhang litrato ng resibo">
+  </div>
+
+  <div id="camControls" style="margin-top:12px">
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn ghost" id="camStart">Buksan ang camera</button>
+      <button class="btn ghost" id="pick">Pumili ng litrato</button>
+    </div>
+    <input type="file" id="file" accept="image/*" capture="environment" hidden>
+    <button class="btn" id="snap" hidden>Kunan ng litrato</button>
+    <div class="row" id="afterShot" hidden style="margin-top:8px">
+      <button class="btn" id="useShot">Suriin ang resibo</button>
+      <button class="btn ghost" id="retake">Ulitin</button>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <div class="grow">
+      <label for="pCard">May hawak ng ID</label>
+      <select id="pCard">
+        <option value="senior">Senior citizen</option>
+        <option value="pwd">PWD</option>
+      </select>
+    </div>
+    <div style="width:110px">
+      <label for="pDiners">Hati sa</label>
+      <input type="number" id="pDiners" value="1" min="1" max="30">
+    </div>
+  </div>
+  <p class="hint" id="photoHint"></p>
+</section>
+
+<!-- ============ MANUAL ============ -->
+<section class="card panel" id="panel-manual" hidden>
+  <div class="row" style="margin-bottom:12px">
+    <div class="grow">
+      <label for="mMerchant">Pangalan ng tindahan</label>
+      <input type="text" id="mMerchant" placeholder="Aling Nena Carinderia">
+    </div>
+    <div style="width:120px">
+      <label for="mCard">ID</label>
+      <select id="mCard">
+        <option value="senior">Senior</option>
+        <option value="pwd">PWD</option>
+      </select>
+    </div>
+  </div>
+
+  <label>Mga item sa resibo</label>
+  <div id="items"></div>
+  <button class="btn ghost small" id="addItem" style="margin-top:4px">+ Dagdag item</button>
+
+  <div class="row" style="margin-top:14px">
+    <div class="grow">
+      <label for="mTotal">Total na nakalimbag sa resibo</label>
+      <input type="text" id="mTotal" inputmode="decimal" placeholder="136.00">
+    </div>
+    <div style="width:110px">
+      <label for="mDiners">Hati sa</label>
+      <input type="number" id="mDiners" value="1" min="1" max="30">
+    </div>
+  </div>
+
+  <label style="margin-top:12px">
+    <input type="checkbox" id="mNonVat" style="width:auto;margin-right:6px">
+    Hindi VAT-registered ang tindahan
+  </label>
+
+  <button class="btn" id="goManual" style="margin-top:14px">Suriin ang resibo</button>
+</section>
+
+<!-- ============ SAMPLES ============ -->
+<section class="card panel" id="panel-sample" hidden>
+  <h2>Mga halimbawang resibo</h2>
+  <div id="samples"></div>
+</section>
+
+<div id="out"></div>
+
+</div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const CATEGORIES = [
+  ["restaurant", "Pagkain / restaurant"],
+  ["medicine", "Gamot"],
+  ["medical_service", "Serbisyong medikal"],
+  ["lab_diagnostic", "Laboratory / X-ray"],
+  ["professional_fee", "Professional fee"],
+  ["transport_land", "Pamasahe (lupa)"],
+  ["transport_air_sea", "Pamasahe (eroplano / barko)"],
+  ["hotel_lodging", "Hotel / lodging"],
+  ["recreation", "Recreation"],
+  ["cinema_theater", "Sinehan / teatro"],
+  ["funeral", "Funeral / burial"],
+  ["basic_necessity", "Basic necessity (5%)"],
+  ["prime_commodity", "Prime commodity (5%)"],
+  ["alcohol", "Alak (walang diskwento)"],
+  ["tobacco", "Sigarilyo (walang diskwento)"],
+  ["other_goods", "Iba pa (walang diskwento)"],
+];
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('[role=tab]').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('[role=tab]').forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      $('panel-' + t.dataset.tab).hidden = !on;
+    });
+    if (tab.dataset.tab !== 'photo') stopCamera();
+  });
+});
+
+/* ---------- readiness ---------- */
+let HEALTH = {};
+fetch('/api/health').then((r) => r.json()).then((h) => {
+  HEALTH = h;
+  const bits = [];
+  bits.push(h.ollama_ok ? 'Ollama: ' + h.model : 'Ollama: patay, template ang sulat');
+  bits.push(h.ocr_backends.length ? 'OCR: ' + h.ocr_backends.join(', ')
+                                  : 'OCR: wala, gamitin ang Manu-mano');
+  $('health').textContent = bits.join(' · ');
+  $('photoHint').textContent = h.ocr_backends.length
+    ? 'Itapat nang patag sa resibo at punuin ang frame.'
+    : 'Walang OCR na naka-install, kaya hindi pa mababasa ang litrato. '
+      + 'Gamitin ang Manu-mano o Halimbawa.';
+}).catch(() => { $('health').textContent = 'Hindi maabot ang server.'; });
+
+/* ---------- camera ---------- */
+let stream = null;
+let shotData = null;
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+  $('video').srcObject = null;
+  $('stage').classList.remove('on');
+  $('snap').hidden = true;
+}
+
+$('camStart').addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 } },
+      audio: false,
+    });
+    $('video').srcObject = stream;
+    await $('video').play();
+    $('stage').classList.add('on');
+    $('video').style.display = 'block';
+    $('shot').style.display = 'none';
+    $('snap').hidden = false;
+    $('afterShot').hidden = true;
+  } catch (e) {
+    /* Not an error worth hiding: plain http on a LAN address is not a secure
+       context, so the camera is simply unavailable there. Say so and point at
+       the file picker, which opens the camera app on a phone anyway. */
+    show(`<div class="err">Hindi mabuksan ang camera: ${esc(e.message)}
+
+Kung nasa telepono at hindi "localhost" ang address, kailangan ng HTTPS para
+sa live camera. Gamitin po ang "Pumili ng litrato" -- bubuksan din nito ang
+camera.</div>`);
+  }
+});
+
+$('snap').addEventListener('click', () => {
+  const v = $('video');
+  const c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  shotData = c.toDataURL('image/jpeg', 0.9);
+  $('shot').src = shotData;
+  $('video').style.display = 'none';
+  $('shot').style.display = 'block';
+  $('snap').hidden = true;
+  $('afterShot').hidden = false;
+  stream.getTracks().forEach((t) => t.stop());
+  stream = null;
+});
+
+$('retake').addEventListener('click', () => {
+  shotData = null;
+  $('afterShot').hidden = true;
+  $('camStart').click();
+});
+
+$('pick').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    shotData = fr.result;
+    $('shot').src = shotData;
+    $('stage').classList.add('on');
+    $('video').style.display = 'none';
+    $('shot').style.display = 'block';
+    $('snap').hidden = true;
+    $('afterShot').hidden = false;
+  };
+  fr.readAsDataURL(f);
+});
+
+$('useShot').addEventListener('click', () => {
+  if (!shotData) return;
+  post('/api/scan', {
+    image: shotData,
+    cardholder: $('pCard').value,
+    diners: Number($('pDiners').value) || 1,
+  }, $('useShot'));
+});
+
+/* ---------- manual entry ---------- */
+function addItemRow(description = '', gross = '', category = 'restaurant') {
+  const row = document.createElement('div');
+  row.className = 'item';
+  const opts = CATEGORIES.map(
+    ([v, l]) => `<option value="${v}"${v === category ? ' selected' : ''}>${l}</option>`
+  ).join('');
+  row.innerHTML =
+    `<input type="text" placeholder="Pangalan ng item" value="${esc(description)}">
+     <input type="text" inputmode="decimal" placeholder="0.00" value="${esc(gross)}">
+     <select>${opts}</select>
+     <button type="button" title="Alisin">&times;</button>`;
+  row.querySelector('button').addEventListener('click', () => {
+    row.remove();
+    if (!$('items').children.length) addItemRow();
+  });
+  $('items').appendChild(row);
+}
+$('addItem').addEventListener('click', () => addItemRow());
+addItemRow();
+
+$('goManual').addEventListener('click', () => {
+  const lines = [];
+  for (const row of $('items').children) {
+    const [desc, amt] = row.querySelectorAll('input');
+    const cat = row.querySelector('select');
+    const gross = amt.value.trim();
+    if (!gross) continue;
+    lines.push({
+      description: desc.value.trim() || 'Item',
+      gross: gross,
+      category: cat.value,
+      diners_sharing: Number($('mDiners').value) || 1,
+    });
+  }
+  if (!lines.length) {
+    show('<div class="err">Maglagay po ng kahit isang item na may halaga.</div>');
+    return;
+  }
+  const receipt = {
+    cardholder: $('mCard').value,
+    merchant: $('mMerchant').value.trim(),
+    lines: lines,
+    seller_vat_registered: !$('mNonVat').checked,
+  };
+  const total = $('mTotal').value.trim();
+  if (total) receipt.printed_total = total;
+  post('/api/audit', { receipt: receipt }, $('goManual'));
+});
+
+/* ---------- samples ---------- */
+fetch('/api/samples').then((r) => r.json()).then((d) => {
+  const box = $('samples');
+  if (!d.samples.length) { box.textContent = 'Walang nahanap na halimbawa.'; return; }
+  d.samples.forEach((s) => {
+    const b = document.createElement('button');
+    b.className = 'btn ghost';
+    b.style.cssText = 'margin-bottom:8px;text-align:left;display:block';
+    b.innerHTML = `<div><b>${esc(s.merchant)}</b><div class="hint"
+        style="margin:2px 0 0">${esc(s.note)}</div></div>`;
+    b.addEventListener('click', () => post('/api/audit', { sample: s.name }, b));
+    box.appendChild(b);
+  });
+});
+
+/* ---------- request plumbing ---------- */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+function show(html) {
+  $('out').innerHTML = html;
+  $('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function post(url, body, button) {
+  const label = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner"></span> Sinusuri&hellip;';
+  show('');
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+    render(data);
+  } catch (e) {
+    show(`<div class="err">${esc(e.message)}</div>`);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = label;
+  }
+}
+
+/* ---------- rendering the result ---------- */
+function render(d) {
+  const w = d.writeup;
+  const bad = d.status === 'SHORTCHANGED';
+  const good = d.status === 'CORRECT';
+  const tone = bad ? 'bad' : good ? 'good' : 'warn';
+  const head = bad ? 'Kulang ang diskwento'
+            : good ? 'Tama ang diskwento'
+            : d.status === 'OVER_DISCOUNTED' ? 'Sobra ang diskwento'
+            : 'Hindi matiyak';
+  const big = bad ? d.overcharge : d.expected_total;
+
+  let html = `
+    <div class="verdict ${tone}">
+      <div class="what">${esc(head)}</div>
+      <div class="amount">${esc(big)}</div>
+      <p>${esc(w.summary_tl)}</p>
+    </div>`;
+
+  if (d.ocr && d.ocr.needs_confirmation.length) {
+    html += d.ocr.needs_confirmation
+      .map((n) => `<div class="note">Kumpirmahin po: ${esc(n)}</div>`).join('');
+  }
+
+  /* The math trail. This is the proof, so it is never collapsed. */
+  html += '<div class="card"><h2>Paano dapat kuwentahin</h2><div class="trail">';
+  /* The engine's last step already IS the total ("Dapat bayaran" or, on a
+     mixed receipt, "Kabuuang dapat bayaran"), so emphasise it rather than
+     printing a second total row underneath it. */
+  let totalShown = false;
+  d.steps.forEach((s, idx) => {
+    const i = s.lastIndexOf(': ');
+    const k = i > 0 ? s.slice(0, i) : s;
+    const v = i > 0 ? s.slice(i + 2) : '';
+    const isTotal = idx === d.steps.length - 1 && i > 0;
+    if (isTotal) totalShown = true;
+    html += `<div class="${isTotal ? 'total' : ''}"><span class="k">${esc(k)}</span>
+             <span>${esc(v)}</span></div>`;
+  });
+  if (!totalShown) {
+    html += `<div class="total"><span>Dapat bayaran</span>
+             <span>${esc(d.expected_total)}</span></div>`;
+  }
+  if (d.printed_total) {
+    html += `<div><span class="k">Nakalimbag sa resibo</span>
+             <span>${esc(d.printed_total)}</span></div>`;
+  }
+  html += '</div></div>';
+
+  html += `<div class="card"><h2>Masasabi ninyo sa cashier</h2>
+           <div class="say">${esc(w.ask_tl)}</div></div>`;
+
+  if (d.warnings.length) {
+    html += '<div class="card"><h2>Paalala</h2>'
+          + d.warnings.map((x) => `<div class="note">${esc(x)}</div>`).join('')
+          + '</div>';
+  }
+
+  if (w.complaint_tl) {
+    html += `<div class="card">
+        <h2>Sulat na maipapakita sa manager</h2>
+        <pre class="letter" id="letter">${esc(w.complaint_tl)}</pre>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost small" id="copy">Kopyahin</button>
+          <button class="btn ghost small" id="print">I-print</button>
+        </div>
+        <div class="cite">`
+      + d.citations.map((c) => `<div>&middot; <b>${esc(c.law)}</b>, ${esc(c.locus)}</div>`)
+          .join('')
+      + `</div></div>`;
+  }
+
+  if (d.lines.length) {
+    html += '<details class="card"><summary>Detalye ng mga item</summary>'
+          + '<div class="trail" style="margin-top:10px">'
+          + d.lines.map((l) => `<div><span class="k">${esc(l.description)}</span>
+              <span>${esc(l.gross)}${l.discount ? ' &minus; ' + esc(l.discount) : ''}
+              </span></div>`).join('')
+          + '</div></details>';
+  }
+
+  if (d.ocr) {
+    html += `<details class="card"><summary>Nabasa ng OCR</summary>
+             <pre class="letter" style="margin-top:10px">${esc(d.ocr.raw_text)}</pre>
+             </details>`;
+  }
+
+  html += `<div class="src">Sulat galing sa: ${esc(w.source)}`
+        + (w.notes.length ? ' · ' + esc(w.notes.join('; ')) : '')
+        + '</div>';
+
+  show(html);
+
+  const copy = $('copy');
+  if (copy) {
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(w.complaint_tl);
+        copy.textContent = 'Nakopya!';
+      } catch {
+        /* Clipboard needs a secure context too; selecting the text always works. */
+        const r = document.createRange();
+        r.selectNodeContents($('letter'));
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+        copy.textContent = 'Piliin at kopyahin';
+      }
+      setTimeout(() => { copy.textContent = 'Kopyahin'; }, 2200);
+    });
+  }
+  const pr = $('print');
+  if (pr) pr.addEventListener('click', () => window.print());
+}
+</script>
+</body>
+</html>

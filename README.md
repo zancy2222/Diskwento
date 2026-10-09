@@ -43,14 +43,37 @@ Nothing here opens a socket except to `localhost:11434`.
 
 ## Quickstart
 
-The engine, the letter templates and the Ollama client are **pure standard
-library**. Clone and run — no `pip install` needed:
+Everything below — the engine, the letter templates, the Ollama client **and
+the web GUI** — is pure standard library. Clone and run; no `pip install`:
 
 ```bash
-python -m unittest discover -s tests -t .   # 35 tests, zero dependencies
+python -m diskwento serve                   # the GUI, opens in your browser
+python -m unittest discover -s tests -t .   # 67 tests, zero dependencies
 python -m diskwento demo --no-llm           # the whole pitch, six receipts
 python -m diskwento doctor                  # what is installed and ready
 ```
+
+On Windows, double-click **`run-gui.bat`** for the GUI or **`run-demo.bat`**
+for the terminal version.
+
+### The GUI
+
+`python -m diskwento serve` starts a local server on `127.0.0.1:8765` and
+opens it. Three ways in:
+
+- **Litrato** — capture with the camera, or pick a photo. Needs OCR installed.
+- **Manu-mano** — type the line items. Works with nothing installed at all.
+- **Halimbawa** — audit the six bundled receipts. The fastest way to demo.
+
+The result shows the verdict, the full arithmetic trail, a sentence to say to
+the cashier, and the complaint letter with copy and print buttons.
+
+A browser rather than a desktop toolkit because the browser already has a
+camera: no OpenCV wheels to fight on Windows, and the same page opens on a
+phone. `--lan` binds all interfaces so a phone on the same wifi can reach it
+(`run-gui-lan.bat`). Note that the live camera needs a secure context, so over
+plain HTTP on a LAN address use "Pumili ng litrato" — on a phone that opens
+the camera app anyway.
 
 On Windows use `py` in place of `python`. The CLI forces UTF-8 output and
 enables ANSI colour itself, so the peso sign prints correctly in `cmd`,
@@ -121,6 +144,8 @@ Full detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 | `llm.py` | Ollama client, hallucination guard, template fallback. |
 | `ocr.py` | Pluggable on-device OCR with receipt preprocessing. |
 | `parser.py` | OCR text to structured receipt, with confirmation flags. |
+| `server.py` | Local web GUI on `http.server`. No framework, no CDN. |
+| `web/index.html` | The whole front end: one self-contained file. |
 | `prompts/system_tl.md` | The model's system prompt. |
 
 ## Before you demo
@@ -135,6 +160,13 @@ checked against the official text — do that against the Official Gazette, BIR
 issuances, and the DSWD / NCDA implementing rules. A judge who knows the law
 will ask, and flagging what you have not verified is a much better answer than
 a confidently wrong section number.
+
+## Privacy
+
+Nothing leaves the machine. The GUI binds `127.0.0.1` by default, the page
+loads no external scripts, fonts or stylesheets, and photos are held in a
+temp file only for the duration of the OCR pass and deleted straight after.
+The one outbound connection anything makes is to Ollama on `localhost:11434`.
 
 ## Scope, honestly
 

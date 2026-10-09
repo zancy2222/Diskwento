@@ -238,6 +238,17 @@ def main(argv: list[str] | None = None) -> int:
                         help="how many people shared the bill")
     p_scan.add_argument("--show-text", action="store_true")
 
+    p_serve = sub.add_parser(
+        "serve", parents=[common], help="open the GUI in a browser"
+    )
+    p_serve.add_argument("--port", type=int, default=8765)
+    p_serve.add_argument(
+        "--lan",
+        action="store_true",
+        help="bind 0.0.0.0 so a phone on the same wifi can reach it",
+    )
+    p_serve.add_argument("--no-browser", action="store_true")
+
     sub.add_parser("demo", parents=[common], help="audit every receipt in samples/")
     sub.add_parser(
         "doctor", parents=[common], help="check OCR, Ollama and citation readiness"
@@ -247,6 +258,19 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "doctor":
         return _doctor(args)
+
+    if args.command == "serve":
+        from .server import serve
+
+        serve(
+            host="0.0.0.0" if args.lan else "127.0.0.1",
+            port=args.port,
+            model=args.model,
+            ollama_host=args.host,
+            use_model=not args.no_llm,
+            open_browser=not args.no_browser,
+        )
+        return 0
 
     if args.command == "demo":
         paths = _sample_paths()
